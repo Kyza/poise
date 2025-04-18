@@ -12,6 +12,9 @@ pub struct CreateReply<'a> {
     embeds: Vec<serenity::CreateEmbed<'a>>,
     attachments: Vec<serenity::CreateAttachment<'a>>,
     pub(crate) ephemeral: Option<bool>,
+    #[cfg(feature = "unstable")]
+    components: Option<Cow<'a, [serenity::CreateComponent<'a>]>>,
+    #[cfg(not(feature = "unstable"))]
     components: Option<Cow<'a, [serenity::CreateActionRow<'a>]>>,
     pub(crate) allowed_mentions: Option<serenity::CreateAllowedMentions<'a>>,
     poll: Option<serenity::CreatePoll<'a, serenity::builder::create_poll::Ready>>,
@@ -41,6 +44,19 @@ impl<'a> CreateReply<'a> {
     /// Set components (buttons and select menus) for this message.
     ///
     /// Any previously set components will be overwritten.
+    #[cfg(feature = "unstable")]
+    pub fn components(
+        mut self,
+        components: impl Into<Cow<'a, [serenity::CreateComponent<'a>]>>,
+    ) -> Self {
+        self.components = Some(components.into());
+        self
+    }
+
+    /// Set components (buttons and select menus) for this message.
+    ///
+    /// Any previously set components will be overwritten.
+    #[cfg(not(feature = "unstable"))]
     pub fn components(
         mut self,
         components: impl Into<Cow<'a, [serenity::CreateActionRow<'a>]>>,
