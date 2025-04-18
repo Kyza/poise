@@ -19,6 +19,7 @@ pub struct CreateReply<'a> {
     pub(crate) allowed_mentions: Option<serenity::CreateAllowedMentions<'a>>,
     poll: Option<serenity::CreatePoll<'a, serenity::builder::create_poll::Ready>>,
     reply: bool,
+    flags: Option<serenity::MessageFlags>,
 }
 
 impl<'a> CreateReply<'a> {
@@ -50,6 +51,13 @@ impl<'a> CreateReply<'a> {
         components: impl Into<Cow<'a, [serenity::CreateComponent<'a>]>>,
     ) -> Self {
         self.components = Some(components.into());
+        self
+    }
+
+    /// Sets the flags for the message.
+    pub fn flags(mut self, flags: serenity::MessageFlags) -> Self {
+        self.flags = Some(flags);
+
         self
     }
 
@@ -128,6 +136,7 @@ impl<'a> CreateReply<'a> {
             ephemeral,
             allowed_mentions,
             poll,
+            flags,
             reply: _, // can't reply to a message in interactions
         } = self;
 
@@ -147,6 +156,10 @@ impl<'a> CreateReply<'a> {
             builder = builder.poll(poll);
         }
 
+        if let Some(flags) = flags {
+            builder = builder.flags(flags);
+        }
+
         builder.add_files(attachments).embeds(embeds)
     }
 
@@ -163,6 +176,7 @@ impl<'a> CreateReply<'a> {
             ephemeral,
             allowed_mentions,
             poll,
+            flags,
             reply: _,
         } = self;
 
@@ -201,6 +215,7 @@ impl<'a> CreateReply<'a> {
             // cannot edit polls.
             poll: _,
             reply: _,
+            flags,
         } = self;
 
         if let Some(content) = content {
@@ -233,6 +248,7 @@ impl<'a> CreateReply<'a> {
             allowed_mentions,
             // cannot edit polls.
             poll: _,
+            flags,
             reply: _, // can't edit reference message afterwards
         } = self;
 
@@ -267,6 +283,7 @@ impl<'a> CreateReply<'a> {
             ephemeral: _, // not supported in prefix
             allowed_mentions,
             poll,
+            flags,
             reply,
         } = self;
 
@@ -285,6 +302,10 @@ impl<'a> CreateReply<'a> {
         }
         if let Some(poll) = poll {
             builder = builder.poll(poll);
+        }
+
+        if let Some(flags) = flags {
+            builder = builder.flags(flags);
         }
 
         for attachment in attachments {
