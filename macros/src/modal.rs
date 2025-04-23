@@ -66,7 +66,7 @@ pub fn modal(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
         let min_length = field_attrs.min_length.into_iter();
         let max_length = field_attrs.max_length.into_iter();
         builders.push(quote::quote! {
-            serenity::CreateActionRow::InputText({
+            serenity::CreateComponent::ActionRow(serenity::CreateActionRow::InputText({
                 let mut b = serenity::CreateInputText::new(#style, #label, stringify!(#field_ident));
                 if let Some(defaults) = &mut defaults {
                     // Can use `defaults.#field_ident` directly in Edition 2021 due to more
@@ -80,7 +80,7 @@ pub fn modal(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
                     .required(#required)
                     #( .min_length(#min_length) )*
                     #( .max_length(#max_length) )*
-            }),
+            })),
         });
 
         // Create modal parser code for this field
@@ -103,7 +103,7 @@ pub fn modal(input: syn::DeriveInput) -> Result<TokenStream, darling::Error> {
         impl #impl_generics poise::Modal for #struct_ident #ty_generics #where_clause {
             fn create(mut defaults: Option<Self>, custom_id: String) -> serenity::CreateInteractionResponse<'static> {
                 serenity::CreateInteractionResponse::Modal(
-                    serenity::CreateModal::new(custom_id, #modal_title).components(vec!{#( #builders )*})
+                    serenity::CreateModal::new(custom_id, #modal_title).components([#( #builders )*].to_vec().to_owned())
                 )
             }
 
