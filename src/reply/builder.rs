@@ -196,6 +196,9 @@ impl<'a> CreateReply<'a> {
         if let Some(poll) = poll {
             builder = builder.poll(poll);
         }
+        if let Some(flags) = flags {
+            builder = builder.flags(flags);
+        }
 
         builder.add_files(attachments)
     }
@@ -215,7 +218,7 @@ impl<'a> CreateReply<'a> {
             // cannot edit polls.
             poll: _,
             reply: _,
-            flags,
+            flags: _, // can't edit flags in retrospect
         } = self;
 
         if let Some(content) = content {
@@ -248,7 +251,7 @@ impl<'a> CreateReply<'a> {
             allowed_mentions,
             // cannot edit polls.
             poll: _,
-            flags,
+            flags: _, // can't edit flags in retrospect
             reply: _, // can't edit reference message afterwards
         } = self;
 
