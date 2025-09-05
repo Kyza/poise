@@ -47,13 +47,9 @@ pub async fn paginate<U: Send + Sync + 'static, E>(
         serenity::CreateButton::new(&next_button_id).emoji('▶'),
     ];
 
-    #[cfg(feature = "unstable")]
     let components = [serenity::CreateComponent::ActionRow(
         serenity::CreateActionRow::buttons(&buttons),
     )];
-
-    #[cfg(not(feature = "unstable"))]
-    let components = [serenity::CreateActionRow::buttons(&buttons)];
     let reply = crate::CreateReply::default()
         .embed(serenity::CreateEmbed::default().description(pages[0]))
         .components(&components);

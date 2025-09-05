@@ -12,10 +12,7 @@ pub struct CreateReply<'a> {
     embeds: Vec<serenity::CreateEmbed<'a>>,
     attachments: Vec<serenity::CreateAttachment<'a>>,
     pub(crate) ephemeral: Option<bool>,
-    #[cfg(feature = "unstable")]
     components: Option<Cow<'a, [serenity::CreateComponent<'a>]>>,
-    #[cfg(not(feature = "unstable"))]
-    components: Option<Cow<'a, [serenity::CreateActionRow<'a>]>>,
     pub(crate) allowed_mentions: Option<serenity::CreateAllowedMentions<'a>>,
     poll: Option<serenity::CreatePoll<'a, serenity::builder::create_poll::Ready>>,
     reply: bool,
@@ -45,29 +42,9 @@ impl<'a> CreateReply<'a> {
     /// Set components (buttons and select menus) for this message.
     ///
     /// Any previously set components will be overwritten.
-    #[cfg(feature = "unstable")]
     pub fn components(
         mut self,
         components: impl Into<Cow<'a, [serenity::CreateComponent<'a>]>>,
-    ) -> Self {
-        self.components = Some(components.into());
-        self
-    }
-
-    /// Sets the flags for the message.
-    pub fn flags(mut self, flags: serenity::MessageFlags) -> Self {
-        self.flags = Some(flags);
-
-        self
-    }
-
-    /// Set components (buttons and select menus) for this message.
-    ///
-    /// Any previously set components will be overwritten.
-    #[cfg(not(feature = "unstable"))]
-    pub fn components(
-        mut self,
-        components: impl Into<Cow<'a, [serenity::CreateActionRow<'a>]>>,
     ) -> Self {
         self.components = Some(components.into());
         self
@@ -118,6 +95,12 @@ impl<'a> CreateReply<'a> {
         self.reply = reply;
         self
     }
+
+    /// Sets the flags for this message.
+    pub fn flags(mut self, flags: serenity::MessageFlags) -> Self {
+        self.flags = Some(flags);
+        self
+    }
 }
 
 /// Methods to create a message builder from any type from this [`CreateReply`]. Used by poise
@@ -136,8 +119,8 @@ impl<'a> CreateReply<'a> {
             ephemeral,
             allowed_mentions,
             poll,
-            flags,
             reply: _, // can't reply to a message in interactions
+            flags,
         } = self;
 
         if let Some(content) = content {
@@ -149,15 +132,14 @@ impl<'a> CreateReply<'a> {
         if let Some(components) = components {
             builder = builder.components(components);
         }
+        if let Some(flags) = flags {
+            builder = builder.flags(flags)
+        }
         if let Some(ephemeral) = ephemeral {
             builder = builder.ephemeral(ephemeral);
         }
         if let Some(poll) = poll {
             builder = builder.poll(poll);
-        }
-
-        if let Some(flags) = flags {
-            builder = builder.flags(flags);
         }
 
         builder.add_files(attachments).embeds(embeds)
@@ -190,14 +172,14 @@ impl<'a> CreateReply<'a> {
         if let Some(allowed_mentions) = allowed_mentions {
             builder = builder.allowed_mentions(allowed_mentions);
         }
+        if let Some(flags) = flags {
+            builder = builder.flags(flags)
+        }
         if let Some(ephemeral) = ephemeral {
             builder = builder.ephemeral(ephemeral);
         }
         if let Some(poll) = poll {
             builder = builder.poll(poll);
-        }
-        if let Some(flags) = flags {
-            builder = builder.flags(flags);
         }
 
         builder.add_files(attachments)
@@ -215,10 +197,10 @@ impl<'a> CreateReply<'a> {
             components,
             ephemeral: _, // can't edit ephemerality in retrospect
             allowed_mentions,
+            flags,
             // cannot edit polls.
             poll: _,
             reply: _,
-            flags: _, // can't edit flags in retrospect
         } = self;
 
         if let Some(content) = content {
@@ -229,6 +211,9 @@ impl<'a> CreateReply<'a> {
         }
         if let Some(allowed_mentions) = allowed_mentions {
             builder = builder.allowed_mentions(allowed_mentions);
+        }
+        if let Some(flags) = flags {
+            builder = builder.flags(flags)
         }
         for attachment in attachments {
             builder = builder.new_attachment(attachment);
@@ -249,9 +234,9 @@ impl<'a> CreateReply<'a> {
             components,
             ephemeral: _, // not supported in prefix
             allowed_mentions,
+            flags,
             // cannot edit polls.
             poll: _,
-            flags: _, // can't edit flags in retrospect
             reply: _, // can't edit reference message afterwards
         } = self;
 
@@ -265,6 +250,9 @@ impl<'a> CreateReply<'a> {
         }
         if let Some(allowed_mentions) = allowed_mentions {
             builder = builder.allowed_mentions(allowed_mentions);
+        }
+        if let Some(flags) = flags {
+            builder = builder.flags(flags)
         }
         if let Some(components) = components {
             builder = builder.components(components);
@@ -286,8 +274,8 @@ impl<'a> CreateReply<'a> {
             ephemeral: _, // not supported in prefix
             allowed_mentions,
             poll,
-            flags,
             reply,
+            flags,
         } = self;
 
         let mut builder = serenity::CreateMessage::new();
@@ -303,12 +291,11 @@ impl<'a> CreateReply<'a> {
         if reply {
             builder = builder.reference_message(invocation_message);
         }
+        if let Some(flags) = flags {
+            builder = builder.flags(flags)
+        }
         if let Some(poll) = poll {
             builder = builder.poll(poll);
-        }
-
-        if let Some(flags) = flags {
-            builder = builder.flags(flags);
         }
 
         for attachment in attachments {
